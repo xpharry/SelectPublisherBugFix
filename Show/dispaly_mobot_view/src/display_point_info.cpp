@@ -30,6 +30,7 @@ void callbackForOld(const sensor_msgs::PointCloud2& cloud) {
     ROS_INFO("got cloud with %d * %d points", (int) pcl_clr_ptr->width, (int) pcl_clr_ptr->height);
     int npts = pcl_clr_ptr->points.size();
     cout<<"color pts size = "<<npts<<endl;
+    if(npts == 0) return;
 
 	geometry_msgs::PointStamped the_point;
 	pcl::PointXYZRGB the_clr_point;
@@ -86,6 +87,7 @@ void callbackForNew(const sensor_msgs::PointCloud2& cloud) {
     ROS_INFO("got cloud with %d * %d points", (int) pcl_clr_ptr->width, (int) pcl_clr_ptr->height);
     int npts = pcl_clr_ptr->points.size();
     cout<<"color pts size = "<<npts<<endl;
+	if(npts == 0) return;
 
 	geometry_msgs::PointStamped the_point;
 	pcl::PointXYZRGB the_clr_point;
