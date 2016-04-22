@@ -36,3 +36,4 @@ RViZ selection tool - points not in FixedFrame
 
 5. http://docs.ros.org/jade/api/rviz/html/user_guide/
 
+6. https://github.com/ros-visualization/rviz/blob/0d423d6249a39f7f3ddd591007952c6dc940b6ac/src/rviz/default_plugin/point_cloud_common.cpp
