@@ -1,12 +1,24 @@
+#include <OgreRay.h>
+#include <OgreSceneManager.h>
+#include <OgreCamera.h>
+#include <OgreMovableObject.h>
+#include <OgreRectangle2D.h>
+#include <OgreSceneNode.h>
+#include <OgreViewport.h>
+#include <OgreMaterialManager.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
+
 #include "rviz/selection/selection_manager.h"
 #include "rviz/viewport_mouse_event.h"
 #include "rviz/display_context.h"
-#include "rviz/selection/forwards.h"
 #include "rviz/properties/property_tree_model.h"
 #include "rviz/properties/property.h"
 #include "rviz/properties/vector_property.h"
 
 #include "publish_selected_patch.h"
+
+#include "rviz/default_plugin/tools/move_tool.h"
 
 #include <ros/ros.h>
 #include <ros/time.h>
@@ -14,53 +26,114 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+
 #include <QVariant>
+#include <QKeyEvent>
+
+namespace rviz
+{
 
 namespace publish_selected_patch
 {
+
 PublishSelectedPatch::PublishSelectedPatch()
+  : Tool()
+  , move_tool_( new MoveTool() )
+  , selecting_( false )
+  , sel_start_x_( 0 )
+  , sel_start_y_( 0 )
+  , moving_( false )
 {
-  updateTopic();
+  shortcut_key_ = 's';
+  access_all_keys_ = true;
 }
 
 PublishSelectedPatch::~PublishSelectedPatch()
 {
+  delete move_tool_;
 }
 
-void PublishSelectedPatch::updateTopic()
+void PublishSelectedPatch::onInitialize()
 {
-  // nh_.param("frame_id", tf_frame_, std::string("/base_link"));
+  move_tool_->initialize( context_ );
+}
+
+void PublishSelectedPatch::activate()
+{
+  setStatus( "Click and drag to select objects on the screen." );
+  context_->getSelectionManager()->setTextureSize(512);
+  selecting_ = false;
+  moving_ = false;
+//  context_->getSelectionManager()->enableInteraction(true);
+}
+
+void PublishSelectedPatch::deactivate()
+{
+  context_->getSelectionManager()->removeHighlight();
+}
+
+void PublishSelectedPatch::update(float wall_dt, float ros_dt)
+{
   cloud_topic_ = "/selected_patch";
   pub_ = nh_.advertise<sensor_msgs::PointCloud2>( cloud_topic_.c_str(), 1 );
-  // ROS_INFO( "Publishing data on topic %s with frame_id %s.",
-  //           nh_.resolveName (cloud_topic_).c_str (),
-  //           tf_frame_.c_str() );
+
+  SelectionManager* sel_manager = context_->getSelectionManager();
+
+  if (!selecting_)
+  {
+    sel_manager->removeHighlight();
+  }
 }
 
-int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
+int PublishSelectedPatch::processMouseEvent( ViewportMouseEvent& event )
 {
-  int flags = rviz::SelectionTool::processMouseEvent( event );
+  SelectionManager* sel_manager = context_->getSelectionManager();
 
-  // determine current selection mode
+  int flags = 0;
+
   if( event.alt() )
   {
+    moving_ = true;
     selecting_ = false;
   }
   else
   {
+    moving_ = false;
+
     if( event.leftDown() )
     {
       selecting_ = true;
+
+      sel_start_x_ = event.x;
+      sel_start_y_ = event.y;
     }
   }
 
   if( selecting_ )
   {
+    sel_manager->highlight( event.viewport, sel_start_x_, sel_start_y_, event.x, event.y );
+
     if( event.leftUp() )
     {
-      rviz::SelectionManager* selection_manager = context_->getSelectionManager();
-      rviz::M_Picked selection = selection_manager->getSelection();
-      rviz::PropertyTreeModel *model = selection_manager->getPropertyModel();
+      SelectionManager::SelectType type = SelectionManager::Replace;
+
+      if( event.shift() )
+      {
+        type = SelectionManager::Add;
+      }
+      else if( event.control() )
+      {
+        type = SelectionManager::Remove;
+      }
+
+      sel_manager->select( event.viewport, sel_start_x_, sel_start_y_, event.x, event.y, type );
+
+      selecting_ = false;
+
+      ///////////////////////////////////////////////////////////////////////
+      rviz::SelectionManager* sel_manager = context_->getSelectionManager();
+      rviz::M_Picked selection = sel_manager->getSelection();
+      rviz::PropertyTreeModel *model = sel_manager->getPropertyModel();
       int num_points = model->rowCount();
       if( selection.empty() || num_points <= 0 )
       {
@@ -96,12 +169,43 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
       selected_cloud.header.stamp = ros::Time::now();
       pub_.publish(selected_cloud);
     }
+
+    flags |= Render;
+  }
+  else if( moving_ )
+  {
+    sel_manager->removeHighlight();
+
+    flags = move_tool_->processMouseEvent( event );
+
+    if( event.type == QEvent::MouseButtonRelease )
+    {
+      moving_ = false;
+    }
+  }
+  else
+  {
+    sel_manager->highlight( event.viewport, event.x, event.y, event.x, event.y );
   }
 
   return flags;
 }
 
+int PublishSelectedPatch::processKeyEvent( QKeyEvent* event, RenderPanel* panel )
+{
+  SelectionManager* sel_manager = context_->getSelectionManager();
+
+  if( event->key() == Qt::Key_F )
+  {
+    sel_manager->focusOnSelection();
+  }
+
+  return Render;
+}
+
 } // end namespace publish_selected_patch
 
+} // end namespace rviz
+
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS( publish_selected_patch::PublishSelectedPatch, rviz::Tool )
+PLUGINLIB_EXPORT_CLASS( rviz::publish_selected_patch::PublishSelectedPatch, rviz::Tool )

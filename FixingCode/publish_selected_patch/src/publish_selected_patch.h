@@ -48,52 +48,72 @@
 #ifndef PUBLISH_SELECTED_PATCH_H
 #define PUBLISH_SELECTED_PATCH_H
 
+#include "rviz/tool.h"
+#include "rviz/selection/forwards.h"
+
+#include <vector>
+
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
-# include <ros/node_handle.h>
-# include <ros/publisher.h>
+#include <ros/node_handle.h>
+#include <ros/publisher.h>
 
-# include "rviz/tool.h"
-
-# include <QCursor>
-# include <QObject>
+#include <QCursor>
+#include <QObject>
 #endif
 
-#include "rviz/default_plugin/tools/selection_tool.h"
+namespace Ogre
+{
+class Viewport;
+}
+
+namespace rviz
+{
+
+class MoveTool;
 
 namespace publish_selected_patch
 {
 
 class PublishSelectedPatch;
 
-class PublishSelectedPatch : public rviz::SelectionTool
+class PublishSelectedPatch : public Tool
 {
 Q_OBJECT
 public:
   PublishSelectedPatch();
   virtual ~PublishSelectedPatch();
 
-  /*
-   * Hooks on rviz::SelectionTool::processMouseEvent() to get and publish
-   * selected points
-   */
-  virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
+  virtual void onInitialize();
+
+  virtual void activate();
+  virtual void deactivate();
+
+  virtual int processMouseEvent( ViewportMouseEvent& event );
+  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
 
 public Q_SLOTS:
-  /*
-   * Creates the ROS topic
-   */
-  void updateTopic();
+  virtual void update(float wall_dt, float ros_dt);
 
-protected:
+private:
   ros::NodeHandle nh_;
   ros::Publisher pub_;
   std::string tf_frame_;
   std::string cloud_topic_;
+
+  MoveTool* move_tool_;
+
   bool selecting_;
+  int sel_start_x_;
+  int sel_start_y_;
+
+  M_Picked highlight_;
+
+  bool moving_;
 };
-} // end namespace publish_selected_patch
 
-#endif // PUBLISH_SELECTED_PATCH_H
+}
 
-////////////////////////////////////////////////////////////////////////////////
+}
+
+#endif
 
