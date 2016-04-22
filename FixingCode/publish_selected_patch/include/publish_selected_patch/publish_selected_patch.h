@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:      publish_selected_patch.h
-// Last change:   2013-11-21
-// Authors:       Bartels, Philipp (mail@pBartels.net)
-// Documentation: http://docs.ros.org/api/rviz/html/
+// Last change:   2016-04-21
+// Authors:       Peng Xu (pxx37@case.edu)
+// Documentation: 
 // Version:       1.0.0
 //
 //////////////////////////////// DOCUMENTATION /////////////////////////////////
@@ -11,11 +11,11 @@
 // Fork of the rviz::SelectionTool:
 // Drag with the left button to select objects in the 3D scene.
 // Hold the Alt key to change viewpoint as in the Move tool.
-// Additionally publishes selected points on /selected_points topic.
+// Additionally publishes selected points on /selected_patch topic.
 //
 /////////////////////////////////// LICENSE ////////////////////////////////////
 //
-// Copyright (C) 2013 Robotics & Biology Laboratory (RBO) TU Berlin
+// Copyright (C) 2016 Case Western Reserve University
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 //
 ////////////////////////////////// CHANGELOG ///////////////////////////////////
 //
-// Version 1.0.0 (2013-11-21)
+// Version 1.0.0 (2016-04-21)
 //
 //////////////////////////////////// NOTES /////////////////////////////////////
 //
@@ -48,72 +48,66 @@
 #ifndef PUBLISH_SELECTED_PATCH_H
 #define PUBLISH_SELECTED_PATCH_H
 
-#include "rviz/tool.h"
-#include "rviz/selection/forwards.h"
-
-#include <vector>
-
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+
 #include <ros/node_handle.h>
 #include <ros/publisher.h>
 
+#include "rviz/tool.h"
+#include "rviz/selection/forwards.h"
+
 #include <QCursor>
 #include <QObject>
+
 #endif
 
-namespace Ogre
-{
-class Viewport;
+namespace Ogre {
+    class Viewport;
 }
 
-namespace rviz
-{
+namespace rviz {
+    class StringProperty;
+    class MoveTool;
 
-class MoveTool;
+    class PublishSelectedPatch: public Tool {
+        Q_OBJECT
+    public:
+        PublishSelectedPatch();
+        virtual ~PublishSelectedPatch();
 
-namespace publish_selected_patch
-{
+        virtual void onInitialize();
 
-class PublishSelectedPatch;
+        virtual void activate();
+        virtual void deactivate();
 
-class PublishSelectedPatch : public Tool
-{
-Q_OBJECT
-public:
-  PublishSelectedPatch();
-  virtual ~PublishSelectedPatch();
+        virtual int processMouseEvent(ViewportMouseEvent& event );
 
-  virtual void onInitialize();
+    public Q_SLOTS:
 
-  virtual void activate();
-  virtual void deactivate();
+        void updateTopic();
+        void updateAutoDeactivate();
 
-  virtual int processMouseEvent( ViewportMouseEvent& event );
-  virtual int processKeyEvent( QKeyEvent* event, RenderPanel* panel );
+    protected:
+        QCursor std_cursor_;
+        QCursor hit_cursor_;
 
-public Q_SLOTS:
-  virtual void update(float wall_dt, float ros_dt);
+        ros::NodeHandle nh_;
+        ros::Publisher pub_;
 
-private:
-  ros::NodeHandle nh_;
-  ros::Publisher pub_;
-  std::string tf_frame_;
-  std::string cloud_topic_;
+        StringProperty* topic_property_;
+        MoveTool* move_tool_;
 
-  MoveTool* move_tool_;
+        bool selecting_;
+        int sel_start_x_;
+        int sel_start_y_;
 
-  bool selecting_;
-  int sel_start_x_;
-  int sel_start_y_;
+        M_Picked highlight_;
 
-  M_Picked highlight_;
-
-  bool moving_;
-};
-
-}
-
+        bool moving_;
+    };
 }
 
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
 
