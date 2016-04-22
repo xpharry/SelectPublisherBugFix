@@ -26,7 +26,7 @@ Then, you can pick up a tool among the three to select a point / points and obse
 
 1. https://github.com/ros-visualization/rviz/issues/844
 
-RViZ selection tool - points not in FixedFrame
+	RViZ selection tool - points not in FixedFrame
 
 2. http://answers.ros.org/question/99796/rviz-storing-point-cloud-selection/
 
