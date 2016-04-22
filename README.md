@@ -34,3 +34,5 @@ RViZ selection tool - points not in FixedFrame
 
 4. http://answers.ros.org/question/173002/using-selection-in-rviz-plugin/
 
+5. http://docs.ros.org/jade/api/rviz/html/user_guide/
+
