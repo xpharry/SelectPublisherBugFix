@@ -198,8 +198,7 @@ Visualization Manager:
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
-    - Class: rviz_plugin_selected_points_topic/PublishSelectedPoints
-    - Class: rviz_plugin_selected_points_publisher/SelectedPointsPublisher
+
   Value: true
   Views:
     Current:

@@ -21,3 +21,16 @@ After you compile everything, run the launch file
 which gives you a show of a colored point cloud.
 
 Then, you can pick up a tool among the three to select a point / points and observe the results in the screen.
+
+# some useful links
+
+1. https://github.com/ros-visualization/rviz/issues/844
+
+RViZ selection tool - points not in FixedFrame
+
+2. http://answers.ros.org/question/99796/rviz-storing-point-cloud-selection/
+
+3. http://answers.ros.org/question/12806/interactively-access-to-laser-point-in-rviz/
+
+4. http://answers.ros.org/question/173002/using-selection-in-rviz-plugin/
+

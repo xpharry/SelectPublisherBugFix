@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Filename:      publish_selected_patch.h
-// Last change:   2016-04-21
-// Authors:       Peng Xu (pxx37@case.edu)
-// Documentation: 
+// Last change:   2013-11-21
+// Authors:       Bartels, Philipp (mail@pBartels.net)
+// Documentation: http://docs.ros.org/api/rviz/html/
 // Version:       1.0.0
 //
 //////////////////////////////// DOCUMENTATION /////////////////////////////////
@@ -11,11 +11,11 @@
 // Fork of the rviz::SelectionTool:
 // Drag with the left button to select objects in the 3D scene.
 // Hold the Alt key to change viewpoint as in the Move tool.
-// Additionally publishes selected points on /selected_patch topic.
+// Additionally publishes selected points on /selected_points topic.
 //
 /////////////////////////////////// LICENSE ////////////////////////////////////
 //
-// Copyright (C) 2016 Case Western Reserve University
+// Copyright (C) 2013 Robotics & Biology Laboratory (RBO) TU Berlin
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 //
 ////////////////////////////////// CHANGELOG ///////////////////////////////////
 //
-// Version 1.0.0 (2016-04-21)
+// Version 1.0.0 (2013-11-21)
 //
 //////////////////////////////////// NOTES /////////////////////////////////////
 //
@@ -45,8 +45,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef SELECTED_POINTS_PUBLISHER_H
-#define SELECTED_POINTS_PUBLISHER_H
+#ifndef PUBLISH_SELECTED_PATCH_H
+#define PUBLISH_SELECTED_PATCH_H
 
 #ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
 # include <ros/node_handle.h>
@@ -60,23 +60,17 @@
 
 #include "rviz/default_plugin/tools/selection_tool.h"
 
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <sensor_msgs/PointCloud2.h>
-
-#include <pcl/filters/extract_indices.h>
-
-namespace rviz_plugin_selected_points_publisher
+namespace publish_selected_patch
 {
 
-class SelectedPointsPublisher;
+class PublishSelectedPatch;
 
-class SelectedPointsPublisher : public rviz::SelectionTool
+class PublishSelectedPatch : public rviz::SelectionTool
 {
 Q_OBJECT
 public:
-  SelectedPointsPublisher();
-  virtual ~SelectedPointsPublisher();
+  PublishSelectedPatch();
+  virtual ~PublishSelectedPatch();
 
   /*
    * Hooks on rviz::SelectionTool::processMouseEvent() to get and publish
@@ -84,46 +78,22 @@ public:
    */
   virtual int processMouseEvent( rviz::ViewportMouseEvent& event );
 
-  virtual int processKeyEvent( QKeyEvent* event, rviz::RenderPanel* panel );
-
 public Q_SLOTS:
   /*
    * Creates the ROS topic
    */
   void updateTopic();
 
-  void PointCloudsCallback(const sensor_msgs::PointCloud2ConstPtr &pc_msg);
-
 protected:
-
-  int _processSelectedAreaAndFindPoints();
-  int _publishAccumulatedPoints();
   ros::NodeHandle nh_;
-  ros::Publisher rviz_selected_pub_;
-  ros::Publisher real_selected_pub_;
-  ros::Publisher partial_pc_pub_;
-  ros::Publisher bb_marker_pub_;
-  ros::Subscriber pc_subs_;
-
+  ros::Publisher pub_;
   std::string tf_frame_;
-  std::string rviz_cloud_topic_;
-  std::string real_cloud_topic_;
-  std::string subs_cloud_topic_;
-  std::string bb_marker_topic_;
+  std::string cloud_topic_;
   bool selecting_;
-
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr current_pc_;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr selected_segment_pc_;
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr accumulated_segment_pc_;
-
-  pcl::ExtractIndices<pcl::PointXYZRGB>::Ptr extract_indices_filter_;
-
-  int num_acc_points_;
-  int num_selected_points_;
 };
-} // end namespace rviz_plugin_selected_points_publisher
+} // end namespace publish_selected_patch
 
-#endif // SELECTED_POINTS_PUBLISHER_H
+#endif // PUBLISH_SELECTED_PATCH_H
 
 ////////////////////////////////////////////////////////////////////////////////
 

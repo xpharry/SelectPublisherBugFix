@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
 	// initialize subscriber
 	ros::Subscriber clicked_point_subscriber = nh.subscribe("/clicked_point", 1, callback);
     ros::Subscriber old_selected_points_subscriber = nh.subscribe("/selected_points", 1, callbackForOld);
-    ros::Subscriber new_selected_points_subscriber = nh.subscribe("/rviz_selected_points", 1, callbackForNew);
+    ros::Subscriber new_selected_points_subscriber = nh.subscribe("/selected_patch", 1, callbackForNew);
 
     // initialize publisher
 	ros::Publisher old_selected_info_pub = nh.advertise<sensor_msgs::PointCloud2>("old_selected", 1);
