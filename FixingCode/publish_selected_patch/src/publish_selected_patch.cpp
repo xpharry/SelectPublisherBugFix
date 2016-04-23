@@ -16,6 +16,9 @@
 #include <pcl/point_types.h>
 #include <QVariant>
 
+#include <algorithm>    
+using namespace std;
+
 namespace publish_selected_patch
 {
 PublishSelectedPatch::PublishSelectedPatch()
@@ -60,16 +63,21 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
   {
     if( event.leftUp() )
     {
-      rviz::SelectionManager* selection_manager = context_->getSelectionManager();
-      rviz::M_Picked selection = selection_manager->getSelection();
-      rviz::PropertyTreeModel *model = selection_manager->getPropertyModel();
+      vector<Ogre::Vector3> result_points;
+      int x_left = min(sel_start_x_, event.x);
+      int x_right = max(sel_start_x_, event.x);
+      int y_left = min(sel_start_y_, event.y);
+      int y_right = max(sel_start_y_, event.y);
+      for(int temp_x = x_left; temp_x <= x_right; temp_x++) {
+        for(int temp_y = y_left; temp_y <= y_right; temp_y++) {
+          Ogre::Vector3 pos;
+          bool success = context_->getSelectionManager()->get3DPoint( event.viewport, temp_x, temp_y, pos );
+          if ( success ) result_points.push_back(pos);
+        }
+      }
 
-      std::vector<Ogre::Vector3> result_points;
-      bool success = context_->getSelectionManager()->get3DPatch( event.viewport, sel_start_x_, sel_start_y_,
-                        1, 1, true, result_points );
-
-      int num_points = result_points.size();
-      if( selection.empty() || num_points <= 0 )
+      int num_points = result_points.size();     
+      if( num_points <= 0 )
       {
         return flags;
       }
@@ -84,13 +92,6 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
 
       pcl::PointXYZRGB the_clr_point;
       for (int ipt = 0; ipt < num_points; ipt++) {
-          QModelIndex child_index = model->index(ipt, 0);
-          rviz::Property* child = model->getProp(child_index);
-          rviz::VectorProperty* subchild = (rviz::VectorProperty*) child->childAt(0);
-          Ogre::Vector3 vec = subchild->getVector();
-          ROS_INFO("event: %d, %d", event.x, event.y);
-          ROS_INFO("VEC: %f, %f, %f", vec.x, vec.y, vec.z);
-
           the_clr_point.x = result_points[ipt].x;
           the_clr_point.y = result_points[ipt].y;
           the_clr_point.z = result_points[ipt].z;

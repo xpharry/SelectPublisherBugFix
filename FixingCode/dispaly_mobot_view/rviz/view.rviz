@@ -198,7 +198,7 @@ Visualization Manager:
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
-
+    - Class: publish_selected_patch/PublishSelectedPatch
   Value: true
   Views:
     Current:
@@ -236,5 +236,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1224
-  X: 664
-  Y: 316
+  X: 654
+  Y: 306
