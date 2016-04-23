@@ -90,6 +90,8 @@ protected:
   std::string tf_frame_;
   std::string cloud_topic_;
   bool selecting_;
+  int sel_start_x_;
+  int sel_start_y_;
 };
 } // end namespace publish_selected_patch
 
