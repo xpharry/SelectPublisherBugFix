@@ -51,6 +51,8 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
     if( event.leftDown() )
     {
       selecting_ = true;
+      sel_start_x_ = event.x;
+      sel_start_y_ = event.y;
     }
   }
 
@@ -61,7 +63,12 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
       rviz::SelectionManager* selection_manager = context_->getSelectionManager();
       rviz::M_Picked selection = selection_manager->getSelection();
       rviz::PropertyTreeModel *model = selection_manager->getPropertyModel();
-      int num_points = model->rowCount();
+
+      std::vector<Ogre::Vector3> result_points;
+      bool success = context_->getSelectionManager()->get3DPatch( event.viewport, sel_start_x_, sel_start_y_,
+                        1, 1, true, result_points );
+
+      int num_points = result_points.size();
       if( selection.empty() || num_points <= 0 )
       {
         return flags;
@@ -81,10 +88,12 @@ int PublishSelectedPatch::processMouseEvent( rviz::ViewportMouseEvent& event )
           rviz::Property* child = model->getProp(child_index);
           rviz::VectorProperty* subchild = (rviz::VectorProperty*) child->childAt(0);
           Ogre::Vector3 vec = subchild->getVector();
+          ROS_INFO("event: %d, %d", event.x, event.y);
+          ROS_INFO("VEC: %f, %f, %f", vec.x, vec.y, vec.z);
 
-          the_clr_point.x = vec.x;
-          the_clr_point.y = vec.y;
-          the_clr_point.z = vec.z;
+          the_clr_point.x = result_points[ipt].x;
+          the_clr_point.y = result_points[ipt].y;
+          the_clr_point.z = result_points[ipt].z;
           the_clr_point.r = 0;
           the_clr_point.g = 0;
           the_clr_point.b = 0;
