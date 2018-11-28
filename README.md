@@ -1,4 +1,4 @@
-# SelectPublisherBugFix
+# Select Publisher Bug Fix
 Final Project of EECS476
 
 # compare among
